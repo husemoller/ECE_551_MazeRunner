@@ -3,8 +3,8 @@ module UART_wrapper_SM(cmd_rdy, clr_rdy, sel, clr_cmd_rdy, rx_rdy, clk, rst_n);
 	output reg cmd_rdy, clr_rdy, sel;
 	input clr_cmd_rdy, rx_rdy, clk, rst_n;
 
-	reg rx_count;
-	logic start, received, set_rdy;
+	reg [1:0] rx_count;
+	logic start, received, set_rdy, set_clr_rdy;
 
 	///////////////////////////////
 	// Define state as enum type //
@@ -28,21 +28,25 @@ module UART_wrapper_SM(cmd_rdy, clr_rdy, sel, clr_cmd_rdy, rx_rdy, clk, rst_n);
 	// Infer rx_count flop //
 	/////////////////////////
 	always_ff @(posedge clk, negedge rst_n) begin
-		if (!rst_n || start) begin
+		if (start) begin
 	    	rx_count <= 0;
 	  	end
 	  	else if (received) begin
-	  		rx_count <= 1;
+	  		rx_count <= rx_count + 1;
 	  	end
-	  	else begin
-	    	rx_count <= rx_count;
-	    end
 	end
 
-	//////////////////////////////////
-	// Set sel based on state logic //
-	//////////////////////////////////
-    assign sel = received ? 1'b0 : 1'b1;	// Creates a 1 clk cycle delay so cmd_rdy is asserted at the same time as cmd is updated
+	////////////////////
+	// Infer sel flop //
+	////////////////////
+	always_ff @(posedge clk) begin
+    	if (start) begin
+    		sel <= 1;
+    	end 
+    	else if (received) begin
+    		sel <= 0;
+    	end
+    end
 
 	/////////////////////////
 	// Infer cmd_rdy flop //
@@ -54,10 +58,9 @@ module UART_wrapper_SM(cmd_rdy, clr_rdy, sel, clr_cmd_rdy, rx_rdy, clk, rst_n);
 	  	else if (set_rdy) begin
 	  		cmd_rdy <= 1;
 	  	end
-	  	else begin
-	    	cmd_rdy <= cmd_rdy;
-	    end
 	end
+
+	assign clr_rdy = set_clr_rdy;
 
 	/////////////////////////
 	// State machine logic //
@@ -65,20 +68,23 @@ module UART_wrapper_SM(cmd_rdy, clr_rdy, sel, clr_cmd_rdy, rx_rdy, clk, rst_n);
 	always_comb begin
 		start = 0;
 		received = 0;
+		set_clr_rdy = 0;
 		set_rdy = 0;
+		next_state = state;
 
 		case (state)
 			IDLE:		if (clr_cmd_rdy) begin
 							start = 1;
 							next_state = RECEIVE;
 						end
-			default: 	if (rx_rdy && rx_count == 1) begin
+			default: 	if (rx_count == 2) begin
 							received = 1;
 							set_rdy = 1;
 							next_state = IDLE;	
 						end
 						else if (rx_rdy) begin
 							received = 1;
+							set_clr_rdy = 1;
 						end
 		endcase
 	end
