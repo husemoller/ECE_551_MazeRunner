@@ -21,11 +21,8 @@ module CommMaster(clk, rst_n, TX, snd_cmd, cmd, cmd_cmplt);
 	///////////////////////
 	always_ff @(posedge clk) begin
 		if (snd_cmd) begin
-	    		mux_in <= cmd[7:0];
+	    	mux_in <= cmd[7:0];
 	  	end
-	  	else begin
-	    		mux_in <= mux_in;
-	    	end
 	end
 
 	//////////////////////////////////////
