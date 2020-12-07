@@ -10,9 +10,8 @@ Project Team Latches - Group members:
       11. Validate simulation
       111. Successfully synthesize module
     * CommMaster:
-      1. Complete CommTB.sv
-      11. Validate simulation
-      111. Successfully synthesize module
+      1. Update UART_wrapper_SM logic for RECEIVE state
+      11. Successfully synthesize module
     * SPI_mstr16:
       1. Successfully synthesize module
   * Validate project
