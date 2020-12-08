@@ -86,11 +86,11 @@ module Control_SM(frm_cmplt, trmt, sel, tx_done, snd_frm, clk, rst_n);
 							start = 1;
 							next_state = TRANSMIT;
 						end
-			default: 	if (tx_done && tx_count == 2) begin
+			default: 	if (tx_done && tx_count == 1) begin
 							set_cmplt = 1;
 							next_state = IDLE;	
 						end
-						else if (tx_done) begin
+						else if (tx_done && sent == 0) begin
 							sent = 1;
 						end
 		endcase
