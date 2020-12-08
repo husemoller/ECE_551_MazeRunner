@@ -77,8 +77,7 @@ module UART_wrapper_SM(cmd_rdy, clr_rdy, sel, clr_cmd_rdy, rx_rdy, clk, rst_n);
 							start = 1;
 							next_state = RECEIVE;
 						end
-			default: 	if (rx_count == 2) begin
-							received = 1;
+			default: 	if (rx_rdy && rx_count == 1) begin
 							set_rdy = 1;
 							next_state = IDLE;	
 						end
